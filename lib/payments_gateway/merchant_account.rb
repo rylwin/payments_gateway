@@ -98,15 +98,7 @@ module PaymentsGateway
     
     
     def create_bank_account(bank_account)
-      #other_fields = {'AcctHolderName' => '0', 'CcCardNumber' => '0', 'CcExpirationDate' => '0', 'CcCardType' => 'VISA'}
-      other_fields = {'CcCardType' => 'VISA', 'CcProcurementCard' => 'false'}
-      params = {'payment' => bank_account.to_pg_hash.merge({'MerchantID' => @merchant_id, 'PaymentMethodID' => 0}.merge(other_fields))}       
-      begin
-        response = @client_driver.createPaymentMethod( login_credentials.merge(params) ) 
-        response.createPaymentMethodResult   
-      rescue
-        0
-      end
+      create_payment_method(payment_method)
     end
     
     
@@ -114,15 +106,8 @@ module PaymentsGateway
       raise 'update_bank_account method not implemented yet'
     end
     
-    
     def delete_bank_account(payment_method_id)
-      params = {'MerchantID' => @merchant_id, 'PaymentMethodID' => payment_method_id}
-      begin         
-        response = @client_driver.deletePaymentMethod( login_credentials.merge(params) ) 
-        response.deletePaymentMethodResult.to_i == payment_method_id.to_i ? true : false     
-      rescue
-        false
-      end      
+      delete_payment_method(payment_method_id)
     end
     
     def debit_bank_account(bank_account, amount)
@@ -153,16 +138,16 @@ module PaymentsGateway
       raise 'get_credit_card method not implemented yet'
     end
     
-    def create_credit_card
-      raise 'create_credit_card method not implemented yet'
+    def create_credit_card(payment_method)
+      create_payment_method(payment_method)
     end
     
     def update_credit_card
       raise 'update_credit_card method not implemented yet'
     end
     
-    def delete_credit_card
-      raise 'delete_credit_card method not implemented yet'
+    def delete_credit_cardi(payment_method_id)
+      delete_payment_method(payment_method_id)
     end
     
     private
@@ -171,6 +156,29 @@ module PaymentsGateway
     def login_credentials
       {:ticket => Authentication.new(@api_login_id, @api_password).login_hash}
     end
+
+    def create_payment_method(payment_method)
+      #other_fields = {'AcctHolderName' => '0', 'CcCardNumber' => '0', 'CcExpirationDate' => '0', 'CcCardType' => 'VISA'}
+      other_fields = {'CcCardType' => 'VISA', 'CcProcurementCard' => 'false'}
+      params = {'payment' => bank_account.to_pg_hash.merge({'MerchantID' => @merchant_id, 'PaymentMethodID' => 0}.merge(other_fields))}       
+      begin
+        response = @client_driver.createPaymentMethod( login_credentials.merge(params) ) 
+        response.createPaymentMethodResult   
+      rescue
+        0
+      end
+    end
+
+    def delete_payment_method(payment_method_id)
+      params = {'MerchantID' => @merchant_id, 'PaymentMethodID' => payment_method_id}
+      begin         
+        response = @client_driver.deletePaymentMethod( login_credentials.merge(params) ) 
+        response.deletePaymentMethodResult.to_i == payment_method_id.to_i ? true : false     
+      rescue
+        false
+      end      
+    end
+
   end
   
 end
