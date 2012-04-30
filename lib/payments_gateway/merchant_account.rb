@@ -79,7 +79,6 @@ module PaymentsGateway
     #   PaymentsGateway::Client.new( response.getPaymentMethodResult['PaymentMethod'] )
     # end    
     
-    
     def get_bank_account(client_id, account_id)
       params = {'MerchantID' => @merchant_id, 'ClientID' => client_id, 'PaymentMethodID' => account_id}    
       response = client_driver.getPaymentMethod( login_credentials.merge(params) ) 
@@ -87,11 +86,9 @@ module PaymentsGateway
       return ba
     end
     
-    
     def create_bank_account(bank_account)
-      create_payment_method(payment_method)
+      create_payment_method(bank_account)
     end
-    
     
     def update_bank_account
       raise 'update_bank_account method not implemented yet'
@@ -165,25 +162,26 @@ module PaymentsGateway
     end
 
     def create_payment_method(payment_method)
+      payment_method.merchant_id = @merchant_id
+
       #other_fields = {'AcctHolderName' => '0', 'CcCardNumber' => '0', 'CcExpirationDate' => '0', 'CcCardType' => 'VISA'}
+      # TODO: Where do we define ACH type if this is a bank account? (e.g., WEB)
       other_fields = {'CcCardType' => 'VISA', 'CcProcurementCard' => 'false'}
-      params = {'payment' => bank_account.to_pg_hash.merge({'MerchantID' => @merchant_id, 'PaymentMethodID' => 0}.merge(other_fields))}       
-      begin
-        response = client_driver.createPaymentMethod( login_credentials.merge(params) ) 
-        response.createPaymentMethodResult   
-      rescue
-        0
-      end
+      params = {'payment' => payment_method.to_pg_hash.merge({'PaymentMethodID' => 0}.merge(other_fields))}       
+
+      response = client_driver.createPaymentMethod(login_credentials.merge(params)) 
+      payment_method_id = response.createPaymentMethodResult.to_i
+
+      payment_method.payment_method_id = payment_method_id
+
+      payment_method_id
     end
 
     def delete_payment_method(payment_method_id)
       params = {'MerchantID' => @merchant_id, 'PaymentMethodID' => payment_method_id}
-      begin         
-        response = client_driver.deletePaymentMethod( login_credentials.merge(params) ) 
-        response.deletePaymentMethodResult.to_i == payment_method_id.to_i ? true : false     
-      rescue
-        false
-      end      
+
+      response = client_driver.deletePaymentMethod( login_credentials.merge(params) ) 
+      response.deletePaymentMethodResult.to_i == payment_method_id.to_i ? true : false     
     end
 
   end

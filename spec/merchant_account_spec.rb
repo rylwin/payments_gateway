@@ -61,19 +61,46 @@ describe PaymentsGateway::MerchantAccount do
     context "when I create a bank account" do
 
       before(:each) do
+        @bank_account = PaymentsGateway::BankAccount.new
+        @bank_account.client_id = @client.client_id
 
+        @bank_account.acct_holder_name = 'Anna Banana'
+        @bank_account.ec_account_number = '123456789'
+        @bank_account.ec_account_trn = '122400724'
+        @bank_account.ec_account_type = PaymentsGateway::BankAccount::CHECKING
+        @bank_account.note = 'Bank of America'
+        @bank_account.is_default = PaymentsGateway::BankAccount::YES
+
+        @bank_account_id = @ma.create_bank_account(@bank_account)
+      end
+
+      it "should respond with the payment_method_id" do
+        @bank_account_id.should be > 0
+      end
+
+      it "should be updated with the PaymentMethodID" do
+        @bank_account.payment_method_id.should == @bank_account_id
+      end
+
+      it "should be updated with the MerchantID" do
+        @bank_account.merchant_id.should == @ma.merchant_id
       end
 
       it "can get the bank account" do
-        pending
+        fetched_bank_account = @ma.get_bank_account(@client.client_id, @bank_account.payment_method_id)
+        
+        fetched_bank_account.note.should == @bank_account.note
+        fetched_bank_account.acct_holder_name.should == @bank_account.acct_holder_name
       end
 
       it "can update the bank account" do
-        pending
+        pending 'Not planning on implementing this. I dont see a lot of value for this...thoughts?'
       end
 
       it "can delete the bank account" do
-        pending
+        deleted_id = @ma.delete_bank_account(@bank_account.payment_method_id)
+
+        deleted_id.should be_true
       end
 
       it "can debit the bank account" do
