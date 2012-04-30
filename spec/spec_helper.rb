@@ -8,5 +8,5 @@ require 'payments_gateway'
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
 RSpec.configure do |config|
-  
+  #config.backtrace_clean_patterns = []
 end

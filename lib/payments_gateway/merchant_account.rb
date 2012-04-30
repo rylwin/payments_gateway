@@ -1,18 +1,20 @@
 module PaymentsGateway
   
   class MerchantAccount
+
+    attr_accessor :merchant_id
   
     def initialize(merchant_id, api_login_id, api_password, transaction_password, production = true)
       if production
-        payments_gateway_client_wsdl = 'https://ws.paymentsgateway.net/Service/v1/Client.wsdl'
-        payments_gateway_transaction_wsdl = 'https://ws.paymentsgateway.net/Service/v1/Transaction.wsdl'
-        payments_gateway_merchant_wsdl = 'https://ws.paymentsgateway.net/Service/v1/Merchant.wsdl'        
-        payments_gateway_socket_wsdl = 'https://ws.paymentsgateway.net/pg/paymentsgateway.asmx?WSDL'
+        @payments_gateway_client_wsdl = 'https://ws.paymentsgateway.net/Service/v1/Client.wsdl'
+        @payments_gateway_transaction_wsdl = 'https://ws.paymentsgateway.net/Service/v1/Transaction.wsdl'
+        @payments_gateway_merchant_wsdl = 'https://ws.paymentsgateway.net/Service/v1/Merchant.wsdl'        
+        @payments_gateway_socket_wsdl = 'https://ws.paymentsgateway.net/pg/paymentsgateway.asmx?WSDL'
       else
-        payments_gateway_client_wsdl = 'https://sandbox.paymentsgateway.net/WS/Client.wsdl'
-        payments_gateway_transaction_wsdl = 'https://sandbox.paymentsgateway.net/WS/Transaction.wsdl'
-        payments_gateway_merchant_wsdl = 'https://sandbox.paymentsgateway.net/WS/Merchant.wsdl'        
-        payments_gateway_socket_wsdl = 'https://ws.paymentsgateway.net/pgtest/paymentsgateway.asmx?WSDL'
+        @payments_gateway_client_wsdl = 'https://sandbox.paymentsgateway.net/WS/Client.wsdl'
+        @payments_gateway_transaction_wsdl = 'https://sandbox.paymentsgateway.net/WS/Transaction.wsdl'
+        @payments_gateway_merchant_wsdl = 'https://sandbox.paymentsgateway.net/WS/Merchant.wsdl'        
+        @payments_gateway_socket_wsdl = 'https://ws.paymentsgateway.net/pgtest/paymentsgateway.asmx?WSDL'
       end
       
       @merchant_id = merchant_id
@@ -20,10 +22,6 @@ module PaymentsGateway
       @api_password = api_password
       @transaction_password = transaction_password
 
-      @client_driver = SOAP::WSDLDriverFactory.new(payments_gateway_client_wsdl).create_rpc_driver
-      @transaction_driver = SOAP::WSDLDriverFactory.new(payments_gateway_transaction_wsdl).create_rpc_driver
-      @merchant_driver = SOAP::WSDLDriverFactory.new(payments_gateway_merchant_wsdl).create_rpc_driver
-      @socket_driver = SOAP::WSDLDriverFactory.new(payments_gateway_socket_wsdl).create_rpc_driver
       nil
     end
   
@@ -38,42 +36,35 @@ module PaymentsGateway
     
     def get_client(client_id)
       params = {:MerchantID => @merchant_id, :ClientID => client_id}    
-      response = @client_driver.getClient( login_credentials.merge(params) )      
+      response = client_driver.getClient( login_credentials.merge(params) )      
       PaymentsGateway::Client.new( response.getClientResult['ClientRecord'] )
     end
     
-    
     def create_client(client)
-      params = {'client' => client.to_pg_hash.merge({'MerchantID' => @merchant_id, 'ClientID' => 0, 'Status' => 'Active'})} 
+      client.merchant_id = @merchant_id
+      client.status = 'Active'
 
-      begin
-        response = @client_driver.createClient( login_credentials.merge(params) ) 
-        response.createClientResult   
-      rescue
-        0
-      end
+      params = {'client' => client.to_pg_hash.merge({'MerchantID' => @merchant_id, 'ClientID' => 0})} 
+      response = client_driver.createClient(login_credentials.merge(params)) 
+      client_id = response.createClientResult.to_i
+
+      client.client_id = client_id
+
+      client_id
     end
-    
     
     def update_client(client)
       params = {'client' => client.to_pg_hash} 
-      begin
-        response = @client_driver.updateClient( login_credentials.merge(params) ) 
-        response.updateClientResult.to_i == client_id.to_i ? true : false     
-      rescue
-        false
-      end
+      response = client_driver.updateClient( login_credentials.merge(params) ) 
+      response.updateClientResult.to_i == client.client_id.to_i ? true : false     
     end
     
     
     def delete_client(client_id)
-      params = {'ClientID' => client_id}    
-      begin
-        response = @client_driver.deleteClient( login_credentials.merge(params) ) 
-        response.deleteClientResult.to_i == client_id.to_i ? true : false     
-      rescue
-        false
-      end
+      params = {'ClientID' => client_id, 'MerchantID' => @merchant_id}
+
+      response = client_driver.deleteClient( login_credentials.merge(params) ) 
+      response.deleteClientResult.to_i == client_id.to_i ? true : false     
     end
     
     
@@ -83,7 +74,7 @@ module PaymentsGateway
     ###################################
     # def get_bank_accounts(client_id)
     #   params = {'ClientID' => client_id, 'PaymentMethodID' => 0}    
-    #   response = @client_driver.getPaymentMethod( login_credentials.merge(params) ) 
+    #   response = client_driver.getPaymentMethod( login_credentials.merge(params) ) 
     # 
     #   PaymentsGateway::Client.new( response.getPaymentMethodResult['PaymentMethod'] )
     # end    
@@ -91,7 +82,7 @@ module PaymentsGateway
     
     def get_bank_account(client_id, account_id)
       params = {'MerchantID' => @merchant_id, 'ClientID' => client_id, 'PaymentMethodID' => account_id}    
-      response = @client_driver.getPaymentMethod( login_credentials.merge(params) ) 
+      response = client_driver.getPaymentMethod( login_credentials.merge(params) ) 
       ba = PaymentsGateway::BankAccount.new( response.getPaymentMethodResult['PaymentMethod'], @transaction_password )
       return ba
     end
@@ -112,13 +103,13 @@ module PaymentsGateway
     
     def debit_bank_account(bank_account, amount)
       params = bank_account.debit_setup(amount)
-      response = @socket_driver.ExecuteSocketQuery( login_credentials.merge(params) ) 
+      response = socket_driver.ExecuteSocketQuery( login_credentials.merge(params) ) 
       transaction_response = PaymentsGateway::TransactionResponse.new( response['ExecuteSocketQueryResult'] )
     end
     
     def credit_bank_account(bank_account, amount)
       params = bank_account.credit_setup(amount)
-      response = @socket_driver.ExecuteSocketQuery( login_credentials.merge(params) ) 
+      response = socket_driver.ExecuteSocketQuery( login_credentials.merge(params) ) 
       transaction_response = PaymentsGateway::TransactionResponse.new( response['ExecuteSocketQueryResult'] )
     end
       
@@ -129,7 +120,7 @@ module PaymentsGateway
     ###################################
     # def get_credit_cards(client_id)
     #   params = {'ClientID' => client_id, 'PaymentMethodID' => 0}    
-    #   response = @client_driver.getPaymentMethod( login_credentials.merge(params) ) 
+    #   response = client_driver.getPaymentMethod( login_credentials.merge(params) ) 
     # 
     #   PaymentsGateway::Client.new( response.getPaymentMethodResult['PaymentMethod'] )
     # end    
@@ -152,6 +143,22 @@ module PaymentsGateway
     
     private
     
+
+    def client_driver
+      @client_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_client_wsdl).create_rpc_driver
+    end
+
+    def transaction_driver
+      @transaction_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_transaction_wsdl).create_rpc_driver
+    end
+
+    def merchant_driver
+      @merchant_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_merchant_wsdl).create_rpc_driver
+    end
+
+    def socket_driver
+      @socket_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_socket_wsdl).create_rpc_driver
+    end
     
     def login_credentials
       {:ticket => Authentication.new(@api_login_id, @api_password).login_hash}
@@ -162,7 +169,7 @@ module PaymentsGateway
       other_fields = {'CcCardType' => 'VISA', 'CcProcurementCard' => 'false'}
       params = {'payment' => bank_account.to_pg_hash.merge({'MerchantID' => @merchant_id, 'PaymentMethodID' => 0}.merge(other_fields))}       
       begin
-        response = @client_driver.createPaymentMethod( login_credentials.merge(params) ) 
+        response = client_driver.createPaymentMethod( login_credentials.merge(params) ) 
         response.createPaymentMethodResult   
       rescue
         0
@@ -172,7 +179,7 @@ module PaymentsGateway
     def delete_payment_method(payment_method_id)
       params = {'MerchantID' => @merchant_id, 'PaymentMethodID' => payment_method_id}
       begin         
-        response = @client_driver.deletePaymentMethod( login_credentials.merge(params) ) 
+        response = client_driver.deletePaymentMethod( login_credentials.merge(params) ) 
         response.deletePaymentMethodResult.to_i == payment_method_id.to_i ? true : false     
       rescue
         false
