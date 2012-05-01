@@ -7,9 +7,9 @@ describe PaymentsGateway::MerchantAccount do
     merchant_id = 144973
     api_login_id = 'wAOpu07K22'
     api_password = 'y87Aoa3gK7PJ7'
-    transaction_password = 'y87Aoa3gK7PJ7'
+    @transaction_password = 'y87Aoa3gK7PJ7'
 
-    @ma = PaymentsGateway::MerchantAccount.new(merchant_id, api_login_id, api_password, transaction_password, false)
+    @ma = PaymentsGateway::MerchantAccount.new(merchant_id, api_login_id, api_password, @transaction_password, false)
   end
 
   context "when I create a new client" do
@@ -85,11 +85,16 @@ describe PaymentsGateway::MerchantAccount do
         @bank_account.merchant_id.should == @ma.merchant_id
       end
 
+      it "should be updated with the TransactionPassword" do
+        @bank_account.transaction_password.should == @transaction_password
+      end
+
       it "can get the bank account" do
         fetched_bank_account = @ma.get_bank_account(@client.client_id, @bank_account.payment_method_id)
         
         fetched_bank_account.note.should == @bank_account.note
         fetched_bank_account.acct_holder_name.should == @bank_account.acct_holder_name
+        fetched_bank_account.transaction_password.should == @transaction_password
       end
 
       it "can update the bank account" do

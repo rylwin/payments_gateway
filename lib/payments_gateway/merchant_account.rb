@@ -81,7 +81,7 @@ module PaymentsGateway
     
     def get_bank_account(client_id, account_id)
       params = {'MerchantID' => @merchant_id, 'ClientID' => client_id, 'PaymentMethodID' => account_id}    
-      response = client_driver.getPaymentMethod( login_credentials.merge(params) ) 
+      response = client_driver.getPaymentMethod(login_credentials.merge(params)) 
       ba = PaymentsGateway::BankAccount.new( response.getPaymentMethodResult['PaymentMethod'], @transaction_password )
       return ba
     end
@@ -163,6 +163,7 @@ module PaymentsGateway
 
     def create_payment_method(payment_method)
       payment_method.merchant_id = @merchant_id
+      payment_method.transaction_password = @transaction_password
 
       #other_fields = {'AcctHolderName' => '0', 'CcCardNumber' => '0', 'CcExpirationDate' => '0', 'CcCardType' => 'VISA'}
       # TODO: Where do we define ACH type if this is a bank account? (e.g., WEB)

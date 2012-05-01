@@ -19,7 +19,8 @@ module PaymentsGateway
     EFT_FORCE = 25
     EFT_VERIFY_ONLY = 26
   
-  
+    attr_accessor :transaction_password
+
     def initialize(account = nil, transaction_password = nil)        
       @field_map = {}
       @data = {}
