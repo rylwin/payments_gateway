@@ -2,6 +2,8 @@ require 'openssl'
 require 'soap/wsdlDriver'
 require 'active_support/all'
 
+require 'lib/payments_gateway/attributes' # must be required first
+
 module PaymentsGateway
   dir = File.dirname(__FILE__) + '/payments_gateway'
   $LOAD_PATH.unshift(dir)

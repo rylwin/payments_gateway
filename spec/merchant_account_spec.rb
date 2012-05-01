@@ -14,9 +14,9 @@ describe PaymentsGateway::MerchantAccount do
 
   context "when I create a new client" do
     before(:each) do
-      @client = PaymentsGateway::Client.new
-      @client.first_name = "John"
-      @client.last_name = "Smith"
+      @client = PaymentsGateway::Client.new(
+        :first_name => 'John', 
+        :last_name => 'Smith')
 
       @client_id = @ma.create_client(@client).to_i
     end
@@ -61,15 +61,14 @@ describe PaymentsGateway::MerchantAccount do
     context "when I create a bank account" do
 
       before(:each) do
-        @bank_account = PaymentsGateway::BankAccount.new
-        @bank_account.client_id = @client.client_id
-
-        @bank_account.acct_holder_name = 'Anna Banana'
-        @bank_account.ec_account_number = '123456789'
-        @bank_account.ec_account_trn = '122400724'
-        @bank_account.ec_account_type = PaymentsGateway::BankAccount::CHECKING
-        @bank_account.note = 'Bank of America'
-        @bank_account.is_default = PaymentsGateway::BankAccount::YES
+        @bank_account = PaymentsGateway::BankAccount.new(
+          :client_id => @client.client_id,
+          :acct_holder_name => 'Anna Banana',
+          :ec_account_number => '123456789',
+          :ec_account_trn => '122400724',
+          :ec_account_type => PaymentsGateway::BankAccount::CHECKING,
+          :note => 'Bank of America',
+          :is_default => PaymentsGateway::BankAccount::YES)
 
         @bank_account_id = @ma.create_bank_account(@bank_account)
       end

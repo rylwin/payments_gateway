@@ -1,31 +1,21 @@
 module PaymentsGateway
   
   class Client
+
+    include PaymentsGateway::Attributes
   
     def initialize(client_record = nil)        
       @field_map = {}
       @data = {}
       
       setup_fields
-      #if client_record.is_a?(Hash)
-      #  attributes = client_record
-      #elsif !client_record.nil?
+      if client_record.is_a?(Hash)
+        self.attributes = client_record
+      elsif !client_record.nil?
         parse(client_record) unless client_record.nil?
-      #end
+      end
       
       nil
-    end
-    
-#    def attributes=(hash)
-#      hash.each_pair do |k, v|
-#        send("self.#{k}=", v)
-#      end
-#    end
-
-    def to_pg_hash
-      retval = {}
-      @data.each { |key, value| retval[ @field_map[key] ] = value }
-      return retval
     end
     
     private

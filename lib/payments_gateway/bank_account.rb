@@ -1,6 +1,8 @@
 module PaymentsGateway
   
   class BankAccount
+
+    include PaymentsGateway::Attributes
     
     CHECKING = 'CHECKING'
     SAVINGS = 'SAVINGS'
@@ -24,7 +26,12 @@ module PaymentsGateway
       @transaction_password = transaction_password
       
       setup_fields
-      parse(account) unless account.nil?
+
+      if account.is_a?(Hash)
+        self.attributes = account
+      elsif !account.nil?
+        parse(account) 
+      end
 
       nil
     end
@@ -49,13 +56,6 @@ module PaymentsGateway
        :pg_client_id => self.client_id,
        :pg_payment_method_id => self.payment_method_id,
        :pg_merchant_data_1 => 'just a test'}
-    end
-    
-    
-    def to_pg_hash
-      retval = {}
-      @data.each { |key, value| retval[ @field_map[key] ] = value }
-      return retval
     end
     
     private
