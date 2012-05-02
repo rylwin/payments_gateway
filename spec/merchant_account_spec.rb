@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe PaymentsGateway::MerchantAccount do
+describe PaymentsGateway::MerchantAccount, :vcr => { :re_record_interval => 1.day } do
 
   before(:each) do
     # Test account data
@@ -13,6 +13,7 @@ describe PaymentsGateway::MerchantAccount do
   end
 
   context "when I create a new client" do
+
     before(:each) do
       @client = PaymentsGateway::Client.new(
         :first_name => 'John', 
