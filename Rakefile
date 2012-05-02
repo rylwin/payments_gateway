@@ -18,7 +18,7 @@ Jeweler::Tasks.new do |gem|
   gem.homepage = "http://github.com/rylwin/payments_gateway"
   gem.license = "MIT"
   gem.summary = %Q{Ruby wrapper for Payments Gateway SOAP AGI API}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.description = %Q{}
   gem.email = "ryan@valencepm.com"
   gem.authors = ["rylwin", "weshays"]
   # dependencies defined in Gemfile
