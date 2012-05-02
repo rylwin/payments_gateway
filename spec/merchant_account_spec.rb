@@ -7,7 +7,7 @@ describe PaymentsGateway::MerchantAccount do
     merchant_id = 144973
     api_login_id = 'wAOpu07K22'
     api_password = 'y87Aoa3gK7PJ7'
-    @transaction_password = 'y87Aoa3gK7PJ7'
+    @transaction_password = '44e4XMhNG4c'
 
     @ma = PaymentsGateway::MerchantAccount.new(merchant_id, api_login_id, api_password, @transaction_password, false)
   end
@@ -16,7 +16,8 @@ describe PaymentsGateway::MerchantAccount do
     before(:each) do
       @client = PaymentsGateway::Client.new(
         :first_name => 'John', 
-        :last_name => 'Smith')
+        :last_name => 'Smith',
+        :email_address => 'john.smith@example.com')
 
       @client_id = @ma.create_client(@client).to_i
     end
@@ -113,6 +114,20 @@ describe PaymentsGateway::MerchantAccount do
 
       it "can credit the bank account" do
         pending
+      end
+
+      context "when I debit the bank account the transaction response" do
+        before(:each) do
+          @transaction_response = @ma.debit_bank_account(@bank_account, :pg_total_amount => 100)
+        end
+
+        it "should be a successful transaction" do
+          @transaction_response.success?.should be_true
+        end
+
+        it "should have a valid trace number" do
+          @transaction_response.pg_trace_number.length.should == 36
+        end
       end
 
     end

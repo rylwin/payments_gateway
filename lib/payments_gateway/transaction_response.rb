@@ -10,6 +10,10 @@ module PaymentsGateway
             
       nil
     end
+
+    def pg_trace_number
+      @data['pg_trace_number']
+    end
     
     def to_pg_hash
       @data

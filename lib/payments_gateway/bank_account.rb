@@ -38,14 +38,16 @@ module PaymentsGateway
     end
     
     
-    def debit_setup(amount)
-      {:pg_merchant_id => self.merchant_id, 
+    def debit_setup(attributes={})
+      base_attributes = {
+       :pg_merchant_id => self.merchant_id, 
        :pg_password => @transaction_password,       
        :pg_transaction_type => EFT_SALE,
-       :pg_total_amount => amount,
        :pg_client_id => self.client_id,
        :pg_payment_method_id => self.payment_method_id,
-       :pg_merchant_data_1 => 'just a test'}
+      }
+
+      base_attributes.merge(attributes)
     end
     
     
