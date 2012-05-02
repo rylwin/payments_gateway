@@ -2,20 +2,21 @@ module PaymentsGateway
   
   class CreditCard
   
+    include PaymentsGateway::Attributes
+
     def initialize(account = nil)        
       @field_map = {}
       @data = {}
       
       setup_fields
-      parse(account) unless account.nil?
+
+      if account.is_a?(Hash)
+        self.attributes = account
+      elsif !account.nil?
+        parse(account) 
+      end
       
       nil
-    end
-    
-    def to_pg_hash
-      retval = {}
-      @data.each { |key, value| retval[ @field_map[key] ] = value }
-      return retval
     end
     
     private

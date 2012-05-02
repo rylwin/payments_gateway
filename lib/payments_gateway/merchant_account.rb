@@ -134,7 +134,7 @@ module PaymentsGateway
       raise 'update_credit_card method not implemented yet'
     end
     
-    def delete_credit_cardi(payment_method_id)
+    def delete_credit_card(payment_method_id)
       delete_payment_method(payment_method_id)
     end
     
