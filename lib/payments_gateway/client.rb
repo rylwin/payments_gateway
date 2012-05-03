@@ -12,7 +12,7 @@ module PaymentsGateway
       if client_record.is_a?(Hash)
         self.attributes = client_record
       elsif !client_record.nil?
-        parse(client_record) unless client_record.nil?
+        parse(client_record) 
       end
       
       nil
