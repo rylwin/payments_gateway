@@ -20,9 +20,20 @@ module PaymentsGateway
     def to_pg_hash
       retval = {}
 
-      @data.each { |key, value| retval[ @field_map[key] ] = value }
+      @data.each { |key, value| retval[ @field_map[key] ] = cast_value_for_key(key, value) }
 
       retval
+    end
+
+    def cast_value_for_key(key, value)
+      case key
+      when 'cc_expiration_date'
+        value.strftime('%Y%m')
+      when 'is_default'
+        value.blank? ? 'false' : value.to_s
+      else
+        value
+      end
     end
 
   end

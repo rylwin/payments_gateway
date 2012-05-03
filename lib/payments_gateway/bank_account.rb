@@ -10,7 +10,7 @@ module PaymentsGateway
     YES = 'true'
     NO = 'false'
     
-    #EFT TRANSACTION_CODES
+    # EFT TRANSACTION_CODES
     EFT_SALE = 20
     EFT_AUTH_ONLY = 21
     EFT_CAPTURE = 22

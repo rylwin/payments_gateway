@@ -139,30 +139,66 @@ describe PaymentsGateway::MerchantAccount, :vcr => { :re_record_interval => 1.da
 
     end
 
-    it "can create a credit card for the client" do
-      pending
-    end
+    context "when I create a credit card" do
 
-    context "with a credit card" do
+      before(:each) do
+        @credit_card = PaymentsGateway::CreditCard.new(
+          :client_id => @client.client_id,
+          :acct_holder_name => 'Anna Banana',
+          :cc_card_number => '4111111111111111',
+          :cc_card_type => 'VISA',
+          :cc_expiration_date => Date.current
+        )
+
+        @credit_card_id = @ma.create_credit_card(@credit_card)
+      end
+
+      it "should respond with the payment_method_id" do
+        @credit_card_id.should be > 0
+      end
+
+      it "should be updated with the PaymentMethodID" do
+        @credit_card.payment_method_id.should == @credit_card_id
+      end
+
+      it "should be updated with the MerchantID" do
+        @credit_card.merchant_id.should == @ma.merchant_id
+      end
+
+      it "should be updated with the TransactionPassword" do
+        @credit_card.transaction_password.should == @transaction_password
+      end
 
       it "can get the credit card" do
-        pending
+        fetched_credit_card = @ma.get_credit_card(@client.client_id, @credit_card.payment_method_id)
+        
+        fetched_credit_card.note.should == @credit_card.note
+        fetched_credit_card.acct_holder_name.should == @credit_card.acct_holder_name
+        fetched_credit_card.transaction_password.should == @transaction_password
       end
 
       it "can update the credit card" do
-        pending
+        pending 'Not planning on implementing this. I dont see a lot of value for this...thoughts?'
       end
 
       it "can delete the credit card" do
-        pending
+        deleted_id = @ma.delete_credit_card(@credit_card.payment_method_id)
+
+        deleted_id.should be_true
       end
 
-      it "can debit the credit card" do
-        pending
-      end
+      context "when I debit the credit card the transaction response" do
+        before(:each) do
+          @transaction_response = @ma.debit_credit_card(@credit_card, :pg_total_amount => 100)
+        end
 
-      it "can credit the credit card" do
-        pending
+        it "should be a successful transaction" do
+          @transaction_response.success?.should be_true
+        end
+
+        it "should have a valid trace number" do
+          @transaction_response.pg_trace_number.length.should == 36
+        end
       end
 
     end

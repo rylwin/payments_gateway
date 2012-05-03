@@ -25,14 +25,9 @@ module PaymentsGateway
       nil
     end
   
-  
     ###################################
     # Client
     ###################################
-    def get_clients
-      raise 'get_clients method not implemented yet'
-    end
-    
     
     def get_client(client_id)
       params = {:MerchantID => @merchant_id, :ClientID => client_id}    
@@ -48,9 +43,7 @@ module PaymentsGateway
       response = client_driver.createClient(login_credentials.merge(params)) 
       client_id = response.createClientResult.to_i
 
-      client.client_id = client_id
-
-      client_id
+      client.client_id = client_id.to_i
     end
     
     def update_client(client)
@@ -67,17 +60,9 @@ module PaymentsGateway
       response.deleteClientResult.to_i == client_id.to_i ? true : false     
     end
     
-    
-    
     ###################################
     # Bank Account
     ###################################
-    # def get_bank_accounts(client_id)
-    #   params = {'ClientID' => client_id, 'PaymentMethodID' => 0}    
-    #   response = client_driver.getPaymentMethod(login_credentials.merge(params)) 
-    # 
-    #   PaymentsGateway::Client.new(response.getPaymentMethodResult['PaymentMethod'])
-    # end    
     
     def get_bank_account(client_id, account_id)
       params = {'MerchantID' => @merchant_id, 'ClientID' => client_id, 'PaymentMethodID' => account_id}    
@@ -110,20 +95,15 @@ module PaymentsGateway
       transaction_response = PaymentsGateway::TransactionResponse.new(response['ExecuteSocketQueryResult'])
     end
       
-    
-    
     ###################################
     # Credit Card
     ###################################
-    # def get_credit_cards(client_id)
-    #   params = {'ClientID' => client_id, 'PaymentMethodID' => 0}    
-    #   response = client_driver.getPaymentMethod(login_credentials.merge(params)) 
-    # 
-    #   PaymentsGateway::Client.new(response.getPaymentMethodResult['PaymentMethod'])
-    # end    
     
     def get_credit_card(client_id, account_id)
-      raise 'get_credit_card method not implemented yet'
+      params = {'MerchantID' => @merchant_id, 'ClientID' => client_id, 'PaymentMethodID' => account_id}    
+      response = client_driver.getPaymentMethod(login_credentials.merge(params)) 
+      ba = PaymentsGateway::CreditCard.new(response.getPaymentMethodResult['PaymentMethod'], @transaction_password)
+      return ba
     end
     
     def create_credit_card(payment_method)
@@ -138,6 +118,18 @@ module PaymentsGateway
       delete_payment_method(payment_method_id)
     end
 
+    def debit_credit_card(credit_card, amount)
+      params = credit_card.debit_setup(amount)
+      response = socket_driver.ExecuteSocketQuery(login_credentials.merge(params)) 
+      transaction_response = PaymentsGateway::TransactionResponse.new(response['ExecuteSocketQueryResult'])
+    end
+    
+    def credit_credit_card(credit_card, amount)
+      params = credit_card.credit_setup(amount)
+      response = socket_driver.ExecuteSocketQuery(login_credentials.merge(params)) 
+      transaction_response = PaymentsGateway::TransactionResponse.new(response['ExecuteSocketQueryResult'])
+    end
+      
     ###################################
     # PaymentMethod
     ###################################
@@ -148,8 +140,8 @@ module PaymentsGateway
 
       #other_fields = {'AcctHolderName' => '0', 'CcCardNumber' => '0', 'CcExpirationDate' => '0', 'CcCardType' => 'VISA'}
       # TODO: Where do we define ACH type if this is a bank account? (e.g., WEB)
-      other_fields = {'CcCardType' => 'VISA', 'CcProcurementCard' => 'false'}
-      params = {'payment' => payment_method.to_pg_hash.merge({'PaymentMethodID' => 0}.merge(other_fields))}       
+      other_fields = {'CcCardType' => 'VISA', 'CcProcurementCard' => 'false', 'EcAccountType' => 'CHECKING'}
+      params = {'payment' => payment_method.to_pg_hash.merge({'PaymentMethodID' => 0}.reverse_merge(other_fields))}       
 
       response = client_driver.createPaymentMethod(login_credentials.merge(params)) 
       payment_method_id = response.createPaymentMethodResult.to_i
@@ -167,7 +159,6 @@ module PaymentsGateway
     end
     
     private
-    
 
     def client_driver
       @client_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_client_wsdl).create_rpc_driver
