@@ -137,29 +137,10 @@ module PaymentsGateway
     def delete_credit_card(payment_method_id)
       delete_payment_method(payment_method_id)
     end
-    
-    private
-    
 
-    def client_driver
-      @client_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_client_wsdl).create_rpc_driver
-    end
-
-    def transaction_driver
-      @transaction_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_transaction_wsdl).create_rpc_driver
-    end
-
-    def merchant_driver
-      @merchant_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_merchant_wsdl).create_rpc_driver
-    end
-
-    def socket_driver
-      @socket_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_socket_wsdl).create_rpc_driver
-    end
-    
-    def login_credentials
-      {:ticket => Authentication.new(@api_login_id, @api_password).login_hash}
-    end
+    ###################################
+    # PaymentMethod
+    ###################################
 
     def create_payment_method(payment_method)
       payment_method.merchant_id = @merchant_id
@@ -183,6 +164,29 @@ module PaymentsGateway
 
       response = client_driver.deletePaymentMethod(login_credentials.merge(params)) 
       response.deletePaymentMethodResult.to_i == payment_method_id.to_i ? true : false     
+    end
+    
+    private
+    
+
+    def client_driver
+      @client_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_client_wsdl).create_rpc_driver
+    end
+
+    def transaction_driver
+      @transaction_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_transaction_wsdl).create_rpc_driver
+    end
+
+    def merchant_driver
+      @merchant_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_merchant_wsdl).create_rpc_driver
+    end
+
+    def socket_driver
+      @socket_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_socket_wsdl).create_rpc_driver
+    end
+    
+    def login_credentials
+      {:ticket => Authentication.new(@api_login_id, @api_password).login_hash}
     end
 
   end
