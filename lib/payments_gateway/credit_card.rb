@@ -4,6 +4,8 @@ module PaymentsGateway
   
     include PaymentsGateway::Attributes
 
+    TYPES = [:visa, :mast, :disc, :amer, :dine, :jcb]
+
     # Credit Card Transaction Codes
     SALE      = 10
     AUTH_ONLY = 11

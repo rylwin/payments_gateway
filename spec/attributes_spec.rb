@@ -40,6 +40,11 @@ describe PaymentsGateway::Attributes do
       @attr.cast_value_for_key('is_default', 'false').should == 'false'
       @attr.cast_value_for_key('is_default', nil).should == 'false'
     end
+
+    it "should convert card type to upcased string" do
+      @attr.cast_value_for_key('cc_card_type', 'visa').should == 'VISA'
+      @attr.cast_value_for_key('cc_card_type', :mast).should == 'MAST'
+    end
   end
 
 end

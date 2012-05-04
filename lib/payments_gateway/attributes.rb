@@ -31,6 +31,8 @@ module PaymentsGateway
         value.strftime('%Y%m')
       when 'is_default'
         value.blank? ? 'false' : value.to_s
+      when 'cc_card_type'
+        value.to_s.upcase
       else
         value
       end
