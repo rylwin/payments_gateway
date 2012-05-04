@@ -64,15 +64,6 @@ module PaymentsGateway
       end          
     end
     
-    def parse(client_record)
-      client_record.__xmlele.each do |x| 
-        m_name = x.first.name.underscore 
-                
-        # client_record[x.first.name] will contain the value "SOAP::Mapping::Object" if it is blank.
-        @data[m_name] = client_record[x.first.name].class.to_s == "SOAP::Mapping::Object" ? '' : client_record[x.first.name]
-      end
-    end
-
   end
   
 end
