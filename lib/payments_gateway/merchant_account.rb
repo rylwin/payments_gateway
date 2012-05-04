@@ -31,8 +31,12 @@ module PaymentsGateway
     
     def get_client(client_id)
       params = {:MerchantID => @merchant_id, :ClientID => client_id}    
-      response = client_driver.getClient(login_credentials.merge(params))      
-      PaymentsGateway::Client.new(response.getClientResult['ClientRecord'])
+
+      response = request(client_driver, :get_client) do
+        soap.body = login_credentials.merge(params)
+      end
+
+      PaymentsGateway::Client.new(response.to_hash[:client_record])
     end
     
     def create_client(client)
@@ -40,24 +44,32 @@ module PaymentsGateway
       client.status = 'Active'
 
       params = {'client' => client.to_pg_hash.merge({'MerchantID' => @merchant_id, 'ClientID' => 0})} 
-      response = client_driver.createClient(login_credentials.merge(params)) 
-      client_id = response.createClientResult.to_i
 
-      client.client_id = client_id.to_i
+      response = request(client_driver, :create_client) do
+        soap.body = login_credentials.merge(params)
+      end
+
+      client.client_id = response.to_i
     end
     
     def update_client(client)
       params = {'client' => client.to_pg_hash} 
-      response = client_driver.updateClient(login_credentials.merge(params)) 
-      response.updateClientResult.to_i == client.client_id.to_i ? true : false     
+      response = request(client_driver, :update_client) do 
+        soap.body = login_credentials.merge(params)
+      end
+
+      response.to_i == client.client_id.to_i ? true : false 
     end
     
     
     def delete_client(client_id)
       params = {'ClientID' => client_id, 'MerchantID' => @merchant_id}
 
-      response = client_driver.deleteClient(login_credentials.merge(params)) 
-      response.deleteClientResult.to_i == client_id.to_i ? true : false     
+      response = request(client_driver, :delete_client) do 
+        soap.body = login_credentials.merge(params)
+      end
+
+      response.to_i == client_id.to_i ? true : false     
     end
     
     ###################################
@@ -66,9 +78,11 @@ module PaymentsGateway
     
     def get_bank_account(client_id, account_id)
       params = {'MerchantID' => @merchant_id, 'ClientID' => client_id, 'PaymentMethodID' => account_id}    
-      response = client_driver.getPaymentMethod(login_credentials.merge(params)) 
-      ba = PaymentsGateway::BankAccount.new(response.getPaymentMethodResult['PaymentMethod'], @transaction_password)
-      return ba
+      response = request(client_driver, :get_payment_method) do
+        soap.body = login_credentials.merge(params)
+      end
+
+      PaymentsGateway::BankAccount.new(response[:payment_method], @transaction_password)
     end
     
     def create_bank_account(bank_account)
@@ -101,9 +115,12 @@ module PaymentsGateway
     
     def get_credit_card(client_id, account_id)
       params = {'MerchantID' => @merchant_id, 'ClientID' => client_id, 'PaymentMethodID' => account_id}    
-      response = client_driver.getPaymentMethod(login_credentials.merge(params)) 
-      ba = PaymentsGateway::CreditCard.new(response.getPaymentMethodResult['PaymentMethod'], @transaction_password)
-      return ba
+
+      response = request(client_driver, :get_payment_method) do
+        soap.body = login_credentials.merge(params)
+      end
+
+      PaymentsGateway::CreditCard.new(response[:payment_method], @transaction_password)
     end
     
     def create_credit_card(payment_method)
@@ -143,25 +160,27 @@ module PaymentsGateway
       other_fields = {'CcCardType' => 'VISA', 'CcProcurementCard' => 'false', 'EcAccountType' => 'CHECKING'}
       params = {'payment' => payment_method.to_pg_hash.merge({'PaymentMethodID' => 0}.reverse_merge(other_fields))}       
 
-      response = client_driver.createPaymentMethod(login_credentials.merge(params)) 
-      payment_method_id = response.createPaymentMethodResult.to_i
+      response = request(client_driver, :create_payment_method) do 
+        soap.body = login_credentials.merge(params)
+      end
 
-      payment_method.payment_method_id = payment_method_id
-
-      payment_method_id
+      payment_method.payment_method_id = response.to_i
     end
 
     def delete_payment_method(payment_method_id)
       params = {'MerchantID' => @merchant_id, 'PaymentMethodID' => payment_method_id}
 
-      response = client_driver.deletePaymentMethod(login_credentials.merge(params)) 
-      response.deletePaymentMethodResult.to_i == payment_method_id.to_i ? true : false     
+      response = request(client_driver, :delete_payment_method) do
+        soap.body = login_credentials.merge(params)
+      end
+
+      response.to_i == payment_method_id.to_i ? true : false     
     end
     
     private
 
     def client_driver
-      @client_driver ||= SOAP::WSDLDriverFactory.new(@payments_gateway_client_wsdl).create_rpc_driver
+      @client_driver ||= Savon::Client.new(@payments_gateway_client_wsdl)
     end
 
     def transaction_driver
@@ -178,6 +197,11 @@ module PaymentsGateway
     
     def login_credentials
       {:ticket => Authentication.new(@api_login_id, @api_password).login_hash}
+    end
+
+    def request(driver, action, options = {}, &block)
+      response = driver.request(action, options, &block)
+      response.to_hash["#{action}_response".to_sym]["#{action}_result".to_sym]
     end
 
   end

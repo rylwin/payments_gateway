@@ -147,7 +147,8 @@ describe PaymentsGateway::MerchantAccount, :vcr => { :re_record_interval => 1.da
           :acct_holder_name => 'Anna Banana',
           :cc_card_number => '4111111111111111',
           :cc_card_type => 'VISA',
-          :cc_expiration_date => Date.current
+          :cc_expiration_date => Date.current,
+          :note => 'some random note'
         )
 
         @credit_card_id = @ma.create_credit_card(@credit_card)
@@ -172,8 +173,8 @@ describe PaymentsGateway::MerchantAccount, :vcr => { :re_record_interval => 1.da
       it "can get the credit card" do
         fetched_credit_card = @ma.get_credit_card(@client.client_id, @credit_card.payment_method_id)
         
-        fetched_credit_card.note.should == @credit_card.note
         fetched_credit_card.acct_holder_name.should == @credit_card.acct_holder_name
+        fetched_credit_card.note.should == @credit_card.note
         fetched_credit_card.transaction_password.should == @transaction_password
       end
 

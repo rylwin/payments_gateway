@@ -7,7 +7,8 @@ module PaymentsGateway
     # matches the column names).
     def attributes=(hash)
       hash.each_pair do |k, v|
-        send("#{k.to_s}=", v)
+        setter = "#{k.to_s}="
+        send(setter, v) if self.class.method_defined?(setter)
       end
     end
 
