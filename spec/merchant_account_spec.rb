@@ -203,6 +203,24 @@ describe PaymentsGateway::MerchantAccount, :vcr => { :re_record_interval => 1.da
 
     end
 
+    context "when I create a credit card with an invalid number" do
+
+      before(:each) do
+        @credit_card = PaymentsGateway::CreditCard.new(
+          :client_id => @client.client_id,
+          :acct_holder_name => 'Anna Banana',
+          :cc_card_number => '4111111',
+          :cc_card_type => 'VISA',
+          :cc_expiration_date => Date.current
+        )
+      end
+
+      it "should raise a fault error describing the fault" do
+        expect { @ma.create_credit_card(@credit_card) }.should raise_error(SOAP::FaultError, "Credit card number is invalid.")
+      end
+
+    end
+
   end
 
 end
