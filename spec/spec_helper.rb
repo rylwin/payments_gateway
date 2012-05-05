@@ -20,3 +20,10 @@ RSpec.configure do |config|
   config.treat_symbols_as_metadata_keys_with_true_values = true
   #config.backtrace_clean_patterns = []
 end
+
+MERCHANT_ACCT_AUTH = {
+  :merchant_id => 144973,
+  :api_login_id => 'wAOpu07K22',
+  :api_password => 'y87Aoa3gK7PJ7',
+  :transaction_password => '44e4XMhNG4c'
+}

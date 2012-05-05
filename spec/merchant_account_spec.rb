@@ -4,12 +4,14 @@ describe PaymentsGateway::MerchantAccount, :vcr => { :re_record_interval => 1.da
 
   before(:each) do
     # Test account data
-    merchant_id = 144973
-    api_login_id = 'wAOpu07K22'
-    api_password = 'y87Aoa3gK7PJ7'
-    @transaction_password = '44e4XMhNG4c'
+    @transaction_password = MERCHANT_ACCT_AUTH[:transaction_password]
 
-    @ma = PaymentsGateway::MerchantAccount.new(merchant_id, api_login_id, api_password, @transaction_password, false)
+    @ma = PaymentsGateway::MerchantAccount.new(
+      MERCHANT_ACCT_AUTH[:merchant_id], 
+      MERCHANT_ACCT_AUTH[:api_login_id], 
+      MERCHANT_ACCT_AUTH[:api_password], 
+      @transaction_password, 
+      false)
   end
 
   context "when I create a new client" do

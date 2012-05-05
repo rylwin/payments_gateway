@@ -5,7 +5,7 @@ module PaymentsGateway
     attr_accessor :merchant_id
   
     def initialize(merchant_id, api_login_id, api_password, transaction_password, production = true)
-      if production
+      if @production = production
         @payments_gateway_client_wsdl = 'https://ws.paymentsgateway.net/Service/v1/Client.wsdl'
         @payments_gateway_transaction_wsdl = 'https://ws.paymentsgateway.net/Service/v1/Transaction.wsdl'
         @payments_gateway_merchant_wsdl = 'https://ws.paymentsgateway.net/Service/v1/Merchant.wsdl'        
@@ -24,7 +24,23 @@ module PaymentsGateway
 
       nil
     end
+
+    def production?
+      @production
+    end
+
+    def authentication
+      Authentication.new(@api_login_id, @api_password)
+    end
   
+    ###################################
+    # Embedded Capture Template 
+    ###################################
+    
+    def embedded_capture_template(options={})
+      PaymentsGateway::EmbeddedCaptureTemplate.new(self, options)
+    end
+
     ###################################
     # Client
     ###################################
@@ -177,7 +193,7 @@ module PaymentsGateway
     end
     
     def login_credentials
-      {:ticket => Authentication.new(@api_login_id, @api_password).login_hash}
+      {:ticket => authentication.login_hash}
     end
 
   end
