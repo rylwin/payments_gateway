@@ -125,6 +125,25 @@ describe PaymentsGateway::MerchantAccount, :vcr => { :re_record_interval => 1.da
         end
       end
 
+      context "when I debit the bank account and the AVS zipcode check fails the transaction response" do
+        before(:each) do
+          @transaction_response = @ma.debit_bank_account(
+            @bank_account,
+            :pg_avs_method => '00200',
+            :ecom_billto_postal_stateprov => 'NY',
+            :ecom_billto_postal_postalcode => '77401', # does not match state
+            :pg_total_amount => 100)
+        end
+
+        it "should not be a successful transaction" do
+          @transaction_response.success?.should be_false
+        end
+
+        it "should have the response code for zipcode failure" do
+          @transaction_response.pg_response_code.should == 'U05'
+        end
+      end
+
       context "when I credit the bank account the transaction response" do
         before(:each) do
           @transaction_response = @ma.credit_bank_account(@bank_account, :pg_total_amount => 100)
