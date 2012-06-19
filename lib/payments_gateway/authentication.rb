@@ -7,6 +7,19 @@ module PaymentsGateway
       @secure_transaction_key = secure_transaction_key
     end
     
+    # Generates a hash containing authentication data.
+    #
+    # For the PaymentsGateway web services, the ts_hash is generated using
+    # the api_login_id and the utc_time. Other services, however, require
+    # additional information to be included in the ts_hash. 
+    # Use the hash_args param to include additional data in the computed ts_hash.
+    # For example:
+    #
+    #   #login_hash([:api_login_id, "some other value", :utc_time])
+    #
+    # This example calculates the ts_hash with the "some other value" included in 
+    # the string to be hashed. :api_login_id and :utc_time are special symbols that
+    # are automatically interpolated with the api_login_id and utc_time, respectively.
     def login_hash(hash_args=[:api_login_id, :utc_time])
       # Time diff from 1/1/0001 00:00:00 to 1/1/1970 00:00:00
       utc_time = (DateTime.now.to_i + 62135596800).to_s + '0000000'
@@ -23,19 +36,19 @@ module PaymentsGateway
     end
 
     def hash_string_from_args(hash_args, utc_time)
-      hash_string = "" 
+      values = []
 
       hash_args.each do |arg|
-        hash_string += "|" unless hash_string.empty?
-        if (arg.is_a?(Symbol)) then
-          hash_string += @api_login_id.to_s if arg == :api_login_id
-          hash_string += utc_time.to_s if arg == :utc_time
+        if arg == :api_login_id
+          values << @api_login_id
+        elsif arg == :utc_time
+          values << utc_time
         else
-          hash_string += arg
+          values << arg
         end
       end
 
-      hash_string
+      values.join '|'
     end
     
   end
