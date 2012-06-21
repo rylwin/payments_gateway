@@ -25,6 +25,10 @@ module PaymentsGateway
       nil
     end
 
+    def swp_redirect_url
+      @production ? 'https://swp.paymentsgateway.net/Redirect/default.aspx' : 'https://sandbox.paymentsgateway.net/SWP/Redirect/default.aspx'
+    end
+
     def production?
       @production
     end

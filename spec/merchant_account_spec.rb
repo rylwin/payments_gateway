@@ -14,6 +14,25 @@ describe PaymentsGateway::MerchantAccount, :vcr => { :re_record_interval => 1.da
       false)
   end
 
+  context "a non-production merchant account" do
+    context "#swp_redirect_url" do
+      it "should return the sandbox url" do
+        @ma.swp_redirect_url.should =~ /sandbox/
+      end
+    end
+  end
+
+  context "a production merchant account" do
+    before(:each) do
+      @ma.instance_eval "@production = true"
+    end
+    context "#swp_redirect_url" do
+      it "should return the live url" do
+        @ma.swp_redirect_url.should =~ /swp/
+      end
+    end
+  end
+
   context "when I create a new client" do
 
     before(:each) do
