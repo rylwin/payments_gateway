@@ -30,6 +30,7 @@ GEM
       multi_json (~> 1.0)
       simplecov-html (~> 0.5.3)
     simplecov-html (0.5.3)
+    soap4r-ruby1.9 (2.0.5)
     vcr (2.1.1)
 
 PLATFORMS
@@ -43,4 +44,5 @@ DEPENDENCIES
   rdoc (~> 3.12)
   rspec (~> 2.8.0)
   simplecov
+  soap4r-ruby1.9 (~> 2.0.5)
   vcr (~> 2.1.0)
