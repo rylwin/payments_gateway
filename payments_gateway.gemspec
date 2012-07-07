@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["rylwin", "weshays"]
-  s.date = "2012-05-02"
+  s.date = "2012-07-07"
   s.description = ""
   s.email = "ryan@valencepm.com"
   s.extra_rdoc_files = [
@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
     "README.rdoc"
   ]
   s.files = [
+    ".rvmrc",
     "Gemfile",
     "Gemfile.lock",
     "LICENSE.txt",
@@ -29,18 +30,22 @@ Gem::Specification.new do |s|
     "lib/payments_gateway/bank_account.rb",
     "lib/payments_gateway/client.rb",
     "lib/payments_gateway/credit_card.rb",
+    "lib/payments_gateway/embedded_capture_template.rb",
     "lib/payments_gateway/merchant_account.rb",
     "lib/payments_gateway/transaction_response.rb",
     "notes.txt",
     "payments_gateway.gemspec",
+    "spec/attributes_spec.rb",
+    "spec/authentication_spec.rb",
     "spec/bank_account_spec.rb",
+    "spec/embedded_capture_template.rb",
     "spec/merchant_account_spec.rb",
     "spec/spec_helper.rb"
   ]
   s.homepage = "http://github.com/rylwin/payments_gateway"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.15"
+  s.rubygems_version = "1.8.10"
   s.summary = "Ruby wrapper for Payments Gateway SOAP AGI API"
 
   if s.respond_to? :specification_version then
@@ -48,32 +53,35 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<activesupport>, [">= 2.3.5"])
+      s.add_runtime_dependency(%q<soap4r-ruby1.9>, ["~> 2.0.5"])
       s.add_development_dependency(%q<rspec>, ["~> 2.8.0"])
       s.add_development_dependency(%q<vcr>, ["~> 2.1.0"])
       s.add_development_dependency(%q<fakeweb>, [">= 0"])
       s.add_development_dependency(%q<rdoc>, ["~> 3.12"])
-      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
+      s.add_development_dependency(%q<bundler>, ["~> 1.1.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.8.3"])
-      s.add_development_dependency(%q<rcov>, [">= 0"])
+      s.add_development_dependency(%q<simplecov>, [">= 0"])
     else
       s.add_dependency(%q<activesupport>, [">= 2.3.5"])
+      s.add_dependency(%q<soap4r-ruby1.9>, ["~> 2.0.5"])
       s.add_dependency(%q<rspec>, ["~> 2.8.0"])
       s.add_dependency(%q<vcr>, ["~> 2.1.0"])
       s.add_dependency(%q<fakeweb>, [">= 0"])
       s.add_dependency(%q<rdoc>, ["~> 3.12"])
-      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
+      s.add_dependency(%q<bundler>, ["~> 1.1.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
-      s.add_dependency(%q<rcov>, [">= 0"])
+      s.add_dependency(%q<simplecov>, [">= 0"])
     end
   else
     s.add_dependency(%q<activesupport>, [">= 2.3.5"])
+    s.add_dependency(%q<soap4r-ruby1.9>, ["~> 2.0.5"])
     s.add_dependency(%q<rspec>, ["~> 2.8.0"])
     s.add_dependency(%q<vcr>, ["~> 2.1.0"])
     s.add_dependency(%q<fakeweb>, [">= 0"])
     s.add_dependency(%q<rdoc>, ["~> 3.12"])
-    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
+    s.add_dependency(%q<bundler>, ["~> 1.1.0"])
     s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
-    s.add_dependency(%q<rcov>, [">= 0"])
+    s.add_dependency(%q<simplecov>, [">= 0"])
   end
 end
 
