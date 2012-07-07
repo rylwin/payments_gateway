@@ -3,6 +3,8 @@ source "http://rubygems.org"
 # Example:
 gem "activesupport", ">= 2.3.5"
 
+gem "soap4r-ruby1.9", "~> 2.0.5"
+
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
 group :development do
@@ -10,7 +12,7 @@ group :development do
   gem 'vcr', '~> 2.1.0'
   gem 'fakeweb'
   gem "rdoc", "~> 3.12"
-  gem "bundler", "~> 1.0.0"
+  gem "bundler", "~> 1.1.0"
   gem "jeweler", "~> 1.8.3"
-  gem "rcov", ">= 0"
+  gem "simplecov", ">= 0"
 end
