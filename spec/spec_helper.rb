@@ -23,7 +23,7 @@ end
 
 MERCHANT_ACCT_AUTH = {
   :merchant_id => 144973,
-  :api_login_id => 'wAOpu07K22',
-  :api_password => 'y87Aoa3gK7PJ7',
+  :api_login_id => 'pXA0c0G72x',
+  :api_password => '2LsRn73H',
   :transaction_password => '44e4XMhNG4c'
 }
